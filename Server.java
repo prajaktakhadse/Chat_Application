@@ -34,25 +34,26 @@ public class Server {
         // thread which will read the data and give it
         Runnable r1 = () -> {
             System.out.println("reader started..");
+            try {
+                while (true) {
 
-            while (true) {
+                    String msg;
 
-                String msg;
-                try {
                     msg = bufferedReader.readLine();
                     if (msg.equals("exit")) {
                         System.out.println("client terminated the chat");
+                        socket.close();
                         break;
                     }
 
                     System.out.println("Client : " + msg);
 
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 }
-
+            } catch (Exception e) {
+                // e.printStackTrace();
+                System.out.println("connection closed...");
             }
+
         };
 
         new Thread(r1).start();
@@ -64,15 +65,20 @@ public class Server {
         Runnable r2 = () -> {
             System.out.println("writer started..  ");
             try {
-                while (true) {
+                while (!socket.isClosed()) {
                     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
                     String content = br.readLine();
                     out.println(content);
                     out.flush();
+
+                    if (content.equals("exit")) {
+                        socket.close();
+                        break;
+                    }
                 }
+                System.out.println("connection closed...");
             } catch (Exception e) {
-                // TODO: handle exception
                 e.printStackTrace();
             }
         };
